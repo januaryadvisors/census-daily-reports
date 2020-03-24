@@ -40,16 +40,19 @@ df <- select(df,
              cumulative_all = CRRALL, cumulative_int = CRRINT) %>% 
   separate(GEOID10, into = c(NA, "GEOID10"), sep = "S") 
 
-df_kinder <- left_join(df, kinder_crosswalk)
-df_kinder$cumulative_all <- as.numeric(df_kinder$cumulative_all)
+# df_kinder <- left_join(df, kinder_crosswalk)
+# df_kinder$cumulative_all <- as.numeric(df_kinder$cumulative_all)
+# df_kinder$GEOID <- df_kinder$GEOID10
 
 shape <- block_groups("48", "201", cb = T)
 shape <- st_as_sf(shape)
-df_kinder$GEOID <- df_kinder$GEOID10
+shape$GEOID <- str_sub(shape$GEOID, end = -2)
+
 
 df$GEOID <- df$GEOID10
 df_spatial <- left_join(shape, df)
 df_spatial <- st_as_sf(df_spatial) 
+df_spatial$cumulative_all <- as.numeric(df_spatial$cumulative_all)
 
 palette1 <- colorBin("Reds", bins = 5, domain = df_spatial$cumulative_all, na.color = "#949292")
 testing <- leaflet() %>% 
@@ -59,7 +62,8 @@ testing <- leaflet() %>%
     data = df_spatial,
     color = 'white',
     weight = 1,
-    fillColor = palette1(df_spatial$cumulative_all)
+    fillColor = palette1(df_spatial$cumulative_all),
+    fillOpacity = 0.7
     )
 testing
 
